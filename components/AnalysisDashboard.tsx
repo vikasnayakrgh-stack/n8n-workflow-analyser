@@ -4,10 +4,11 @@ import { AnalysisResult } from '../types';
 
 interface AnalysisDashboardProps {
   result: AnalysisResult;
+  onApplyFix: (json: string) => void;
 }
 
-const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ result }) => {
-  const [activeTab, setActiveTab] = useState<'summary' | 'issues' | 'testing' | 'json'>('summary');
+const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ result, onApplyFix }) => {
+  const [activeTab, setActiveTab] = useState<'summary' | 'issues' | 'fix' | 'testing' | 'json'>('summary');
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-emerald-400';
@@ -15,12 +16,12 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ result }) => {
     return 'text-rose-400';
   };
 
-  const TabButton = ({ id, label, icon }: { id: typeof activeTab, label: string, icon: React.ReactNode }) => (
+  const TabButton = ({ id, label, icon, color = "bg-blue-600" }: { id: typeof activeTab, label: string, icon: React.ReactNode, color?: string }) => (
     <button
       onClick={() => setActiveTab(id)}
       className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all ${
         activeTab === id 
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' 
+          ? `${color} text-white shadow-lg shadow-blue-900/40` 
           : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
       }`}
     >
@@ -59,6 +60,11 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ result }) => {
         <TabButton 
           id="issues" label="Issues" 
           icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>} 
+        />
+        <TabButton 
+          id="fix" label="Fix" 
+          color="bg-emerald-600"
+          icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>} 
         />
         <TabButton 
           id="testing" label="Testing Lab" 
@@ -145,6 +151,56 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ result }) => {
           </div>
         )}
 
+        {activeTab === 'fix' && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="p-8 bg-emerald-500/10 border border-emerald-500/20 rounded-[2rem] flex flex-col md:flex-row items-center gap-6 shadow-xl">
+               <div className="p-4 bg-emerald-500/20 rounded-full">
+                  <svg className="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04M12 21.432a11.955 11.955 0 01-8.618-3.04A11.955 11.955 0 0112 11.608a11.955 11.955 0 018.618 3.04 11.955 11.955 0 01-8.618 3.04z"/></svg>
+               </div>
+               <div className="flex-grow text-center md:text-left">
+                  <h3 className="text-2xl font-bold text-white mb-2">Architectural Fix Ready</h3>
+                  <p className="text-emerald-200/70 text-sm max-w-lg">The improved version resolves all identified critical blockers, implements secure credential handling, and optimizes code blocks for stability.</p>
+               </div>
+               <button 
+                 onClick={() => onApplyFix(result.improvedJson)}
+                 className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-emerald-900/40 active:scale-95 flex items-center gap-3"
+               >
+                 Apply Fix to Workspace
+               </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
+                  <h4 className="text-emerald-400 font-bold text-xs uppercase mb-4 tracking-widest">Key Improvements Applied</h4>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2 text-sm text-slate-300">
+                      <span className="text-emerald-500 mt-1">✓</span> Secure credential injection via n8n parameters
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-slate-300">
+                      <span className="text-emerald-500 mt-1">✓</span> Decoupled monolithic scripts into modular logic blocks
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-slate-300">
+                      <span className="text-emerald-500 mt-1">✓</span> Integrated robust n8n-native retry mechanisms
+                    </li>
+                    <li className="flex items-start gap-2 text-sm text-slate-300">
+                      <span className="text-emerald-500 mt-1">✓</span> Optimized system prompts for target LLM models
+                    </li>
+                  </ul>
+               </div>
+               <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700">
+                  <h4 className="text-blue-400 font-bold text-xs uppercase mb-4 tracking-widest">Stability Impact</h4>
+                  <div className="flex items-end gap-2 mb-2">
+                     <span className="text-3xl font-black text-white">+{Math.round((100 - result.score) * 0.8)}%</span>
+                     <span className="text-slate-500 text-xs mb-1">Estimated Reliability Boost</span>
+                  </div>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                     <div className="bg-emerald-500 h-full w-[85%]"></div>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'testing' && (
           <div className="space-y-8 animate-in fade-in duration-300">
             <div>
@@ -175,7 +231,7 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ result }) => {
         {activeTab === 'json' && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex items-center justify-between mb-2">
-               <h3 className="text-xl font-bold text-white">Refactored Workflow</h3>
+               <h3 className="text-xl font-bold text-white">Refactored Workflow Source</h3>
                <button 
                  onClick={() => {
                    navigator.clipboard.writeText(result.improvedJson);

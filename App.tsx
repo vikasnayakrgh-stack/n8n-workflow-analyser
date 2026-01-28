@@ -16,6 +16,17 @@ const App: React.FC = () => {
     setInputJson(e.target.value);
   };
 
+  const applyFixedWorkflow = (fixedJson: string) => {
+    try {
+      const prettyJson = JSON.stringify(JSON.parse(fixedJson), null, 2);
+      setInputJson(prettyJson);
+      setParsedWorkflow(JSON.parse(fixedJson));
+      alert('Fixed workflow applied to the console!');
+    } catch (e) {
+      console.error('Failed to apply fixed workflow', e);
+    }
+  };
+
   const startAnalysis = async () => {
     setStage(AnalysisStage.PARSING);
     setError(null);
@@ -111,7 +122,7 @@ const App: React.FC = () => {
           )}
 
           {parsedWorkflow && <WorkflowVisualizer workflow={parsedWorkflow} />}
-          {analysis && <AnalysisDashboard result={analysis} />}
+          {analysis && <AnalysisDashboard result={analysis} onApplyFix={applyFixedWorkflow} />}
         </div>
       </div>
     </div>
